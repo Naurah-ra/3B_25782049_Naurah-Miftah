@@ -1,17 +1,36 @@
-const int ledPin = 5;
+#include <ESP8266WiFi.h>  
+#include <ESP8266HTTPClient.h>  
+#include <WiFiClient.h>
 
-void setup() {
-  Serial.begin(115200);
-  pinMode(ledPin, OUTPUT);
-  Serial.println("Praktikum 1 - Digital Output Dimulai!");
+const char* ssid = "delya";  
+const char* password = "abcde123";
+
+const char* serverName = "http://10.194.3.107/relay/on";   
+const byte ldrPin = A0;
+
+void setup() {  
+  Serial.begin(115200);  
+  WiFi.mode(WIFI_STA);  
+  WiFi.begin(ssid, password);  
+  while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }  
+  Serial.println("\nClient Terhubung ke Wi-Fi!");  
 }
 
-void loop() {
-  digitalWrite(ledPin, HIGH);
-  Serial.println("LED Menyala");
-  delay(1000);
-  
-  digitalWrite(ledPin, LOW);
-  Serial.println("LED Mati");
-  delay(1000);
+void loop() {  
+  int ldrValue = analogRead(ldrPin);  
+    
+  if ((WiFi.status() == WL_CONNECTED) && (ldrValue > 300)) {  
+    WiFiClient client;  
+    HTTPClient http;  
+      
+    http.begin(client, serverName);  
+    int httpResponseCode = http.GET();  
+      
+    Serial.print("HTTP Response code: ");  
+    Serial.println(httpResponseCode); 
+      
+    http.end();  
+    delay(10000); 
+  }  
+  delay(2000);  
 }
